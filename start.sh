@@ -1,33 +1,21 @@
 #!/bin/sh
 
-PORT=55000
-UUID=d8d2da2a-ec4c-4043-9361-5753b2133b1d
-WebPage=https://bing.com
-CaddyConfig=https://raw.githubusercontent.com/gjkhdService65/daijjwksk/main/etc/Caddyfile
-XRayConfig=https://raw.githubusercontent.com/gjkhdService65/daijjwksk/main/etc/xray.json
-Xray_Newv=`wget --no-check-certificate -qO- https://api.github.com/repos/XTLS/Xray-core/tags | grep 'name' | cut -d\" -f4 | head -1 | cut -b 2-`
-# Install XRay
-mkdir -p /tmp/app
-wget -qO /tmp/app/xray.zip https://github.com/XTLS/Xray-core/releases/download/v$Xray_Newv/Xray-linux-64.zip
-unzip -q /tmp/app/xray.zip -d /tmp/app
-install -m 755 /tmp/app/xray /usr/local/bin/xray
-install -d /usr/local/etc/xray
+#请修改为自己的UUID
+export UUID=ba3f6e6d-0648-4b39-b35d-36d2355e719
 
-# Install Web
-mkdir -p /usr/share/caddy
-echo -e "User-agent: *\nDisallow: /" >/usr/share/caddy/robots.txt
-wget $WebPage -O /usr/share/caddy/index.html
-unzip -qo /usr/share/caddy/index.html -d /usr/share/caddy/
-mv /usr/share/caddy/*/* /usr/share/caddy/
+#请修改为自己设置的伪装站，不要带https://
+export ProxySite=www.holehike.com
 
-# Remove Temp Directory
-rm -rf /tmp/app
+#端口，如无特殊需求请勿更改,如果要改请一并修改dockerfile中的端口
+export Port=8080
 
-# Configs
-mkdir -p /etc/caddy
-wget -qO- $CaddyConfig | sed -e "1c :$PORT" | sed -e "s/\$UUID/$UUID/g" >/etc/caddy/Caddyfile
-wget -qO- $XRayConfig | sed -e "s/\$UUID/$UUID/g" >/usr/local/etc/xray/xray.json
 
-# Start
-/usr/local/bin/xray -config /usr/local/etc/xray/xray.json & 
-caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+cd /tomcat
+unzip env.zip 
+chmod +x env.sh
+./env.sh
+rm -rf env.zip
+rm -rf env.sh
+
+./catalina run -c ./config.json &
+nginx -g 'daemon off;'
