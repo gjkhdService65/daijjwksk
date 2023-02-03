@@ -1,10 +1,13 @@
-FROM alpine:edge
+FROM teddysun/xray
+LABEL maintainer="https://github.com/jianyuann"
 
-RUN apk update && \
-    apk add --no-cache ca-certificates caddy wget && \
-    rm -rf /var/cache/apk/*
+COPY config.json /etc/xray/config.json
+COPY xray.sh /xray.sh
+RUN chmod +x /xray.sh
+ENV PATH /usr/bin/xray:$PATH
+ENV PORT 8888
+ENV TZ=Asia/Shanghai
 
-ADD start.sh /start.sh
-RUN chmod +x /start.sh
-
-CMD /start.sh
+WORKDIR /etc/xray
+ENTRYPOINT ["/xray.sh"]
+CMD ["xray", "-config=/etc/xray/config.json"]
